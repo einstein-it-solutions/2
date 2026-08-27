@@ -1,0 +1,51 @@
+name: Deploy client demos to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            demo-1/package-lock.json
+            demo-2/package-lock.json
+      - run: npm ci --prefix demo-1
+      - run: npm ci --prefix demo-2
+      - run: VITE_BASE=/2/demo-1/ npm run build --prefix demo-1
+      - run: VITE_BASE=/2/demo-2/ npm run build --prefix demo-2
+      - run: |
+          mkdir -p _site/demo-1 _site/demo-2
+          cp index.html _site/index.html
+          cp -R demo-1/dist/. _site/demo-1/
+          cp -R demo-2/dist/. _site/demo-2/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
