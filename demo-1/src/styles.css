@@ -249,3 +249,54 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @keyframes portal-breathe { 50% { transform: scale(1.035); box-shadow: 0 0 0 38px rgba(68,196,235,.035), 0 0 72px rgba(57,198,240,.2); } }
 @media (max-width: 650px) { .experience-portal { top: 63%; right: -42vw; width: 145vw; opacity: .58; }.experience-portal img { opacity: .26; }.experience-portal::after { background: radial-gradient(circle at 50% 50%, transparent 8%, rgba(6,27,44,.36) 50%, #061b2c 82%), linear-gradient(0deg, #061b2c, transparent 65%); } }
 @media (prefers-reduced-motion: reduce) { .experience-portal span { animation: none; } }
+
+/* Demo 01 — cinematic chapter hand-offs. The grey is a deliberate bridge between ink-blue scenes, never a flat white interruption. */
+:root {
+  --slate-light: #cdd4d9;
+  --slate-mid: #9eaab3;
+  --slate-deep: #33414c;
+  --graphite: #18252f;
+}
+
+[data-scene] { isolation: isolate; }
+.scene-sweep { position: absolute; z-index: 0; top: -1px; left: 0; width: 100%; height: clamp(5.7rem, 10vw, 9.5rem); overflow: hidden; pointer-events: none; opacity: 0; }
+.scene-sweep::before, .scene-sweep::after { position: absolute; content: ''; pointer-events: none; }
+.scene-sweep::before { inset: 0 -16%; background: linear-gradient(101deg, rgba(7, 30, 44, .98) 0 39%, rgba(21, 61, 81, .95) 55%, rgba(62, 135, 166, .45) 74%, transparent 88%), radial-gradient(ellipse at 58% 0%, rgba(102, 218, 248, .34), transparent 42%); clip-path: polygon(0 0, 100% 0, 100% 19%, 83% 65%, 61% 88%, 38% 74%, 19% 96%, 0 68%); filter: drop-shadow(0 14px 20px rgba(0, 8, 17, .26)); transform: translate3d(-112%, 0, 0) skewX(-13deg); }
+.scene-sweep::after { top: 42%; left: 7%; width: 5.5rem; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); box-shadow: 0 0 16px rgba(98, 217, 248, .72); opacity: 0; transform: translateX(-8rem); }
+.scene-sweep[data-direction='right']::before { transform: translate3d(112%, 0, 0) skewX(13deg); }
+.scene-sweep[data-direction='right']::after { right: 7%; left: auto; transform: translateX(8rem); }
+.scene-is-active .scene-sweep { opacity: 1; }
+.scene-is-active .scene-sweep[data-direction='left']::before { animation: chapter-sweep-left 1.25s var(--ease) both; }
+.scene-is-active .scene-sweep[data-direction='right']::before { animation: chapter-sweep-right 1.25s var(--ease) both; }
+.scene-is-active .scene-sweep::after { animation: chapter-sweep-signal 1.08s .18s var(--ease) both; }
+@keyframes chapter-sweep-left { 0% { transform: translate3d(-112%, 0, 0) skewX(-13deg); } 68% { transform: translate3d(7%, 0, 0) skewX(-3deg); } 100% { transform: translate3d(0, 0, 0) skewX(0); } }
+@keyframes chapter-sweep-right { 0% { transform: translate3d(112%, 0, 0) skewX(13deg); } 68% { transform: translate3d(-7%, 0, 0) skewX(3deg); } 100% { transform: translate3d(0, 0, 0) skewX(0); } }
+@keyframes chapter-sweep-signal { 0% { opacity: 0; } 28% { opacity: 1; } 100% { opacity: 0; transform: translateX(15rem); } }
+
+.intro { padding-top: clamp(8.7rem, 13vw, 12.3rem); color: var(--graphite); background: radial-gradient(circle at 83% 18%, rgba(116, 210, 240, .2), transparent 28%), linear-gradient(132deg, #aeb9c1 0%, var(--slate-light) 46%, #e0e5e8 100%); }
+.intro::before { position: absolute; z-index: 0; top: -1px; right: 0; left: 0; height: clamp(6rem, 11vw, 10.5rem); content: ''; background: linear-gradient(180deg, #071e2c 0%, #0a3046 57%, rgba(21, 58, 78, .62) 72%, transparent 100%); clip-path: ellipse(78% 66% at 50% 0%); }
+.intro .eyebrow, .intro-copy .brand-story { color: #126f96; }
+.intro-copy p { color: #415561; }
+.intro .inline-link { color: #17323f; }
+.intro-panels article { background: #273843; box-shadow: 0 20px 44px rgba(19, 34, 44, .18); }
+.intro-panels article:nth-child(2) { color: #152731; background: #8fc6d9; }
+.intro-panels article:nth-child(2) span { color: #176988; }
+
+.process { padding-top: clamp(8.7rem, 13vw, 12.3rem); color: var(--graphite); background: linear-gradient(120deg, #bcc6cd, #e3e7e9 58%, #c7d1d7); }
+.process::before { position: absolute; z-index: 0; top: -1px; right: 0; left: 0; height: clamp(6rem, 11vw, 10.5rem); content: ''; background: linear-gradient(180deg, #071e2c 0%, #0c354b 61%, rgba(24, 73, 96, .5) 77%, transparent 100%); clip-path: ellipse(74% 65% at 50% 0%); }
+.process .eyebrow { color: #126f96; }
+.process-steps { border-color: rgba(24, 51, 64, .25); }
+.process-step { border-color: rgba(24, 51, 64, .18); }
+.process-steps p { color: #4a5f6b; }
+
+.reveal-left, .reveal-right { will-change: transform, opacity, filter; }
+@media (max-width: 650px) {
+  .scene-sweep { height: 5.6rem; }
+  .intro, .process { padding-top: 7.3rem; }
+  .intro::before, .process::before { height: 6rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-sweep { opacity: .82; }
+  .scene-sweep::before { transform: none !important; animation: none !important; }
+  .scene-sweep::after { display: none; }
+}

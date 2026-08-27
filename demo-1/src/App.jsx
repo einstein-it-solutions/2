@@ -59,12 +59,15 @@ const productionServices = [
   ['03', 'Digital storefronts', 'Websites and digital touchpoints that carry the story further.'],
 ]
 
-function Reveal({ children, className = '', delay = 0 }) {
+function Reveal({ children, className = '', delay = 0, direction = 'up' }) {
   const reduce = useReducedMotion()
-  return <motion.div className={`reveal ${className}`} initial={reduce ? false : { opacity: 0, y: 42, scale: .985, rotateX: -5, filter: 'blur(10px)' }} whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0, filter: 'blur(0px)' }} viewport={{ once: true, amount: 0.16, margin: '0px 0px -70px 0px' }} transition={{ duration: .88, delay, ease }}>{children}</motion.div>
+  const x = direction === 'left' ? -52 : direction === 'right' ? 52 : 0
+  const y = direction === 'up' ? 42 : 18
+  return <motion.div className={`reveal reveal-${direction} ${className}`} initial={reduce ? false : { opacity: 0, x, y, scale: .985, rotateX: -5, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, rotateX: 0, filter: 'blur(0px)' }} viewport={{ once: true, amount: 0.16, margin: '0px 0px -70px 0px' }} transition={{ duration: .88, delay, ease }}>{children}</motion.div>
 }
 
 function SectionMarker({ number }) { return <div className="section-marker" aria-hidden="true"><span>{number}</span><i /><i /><i /></div> }
+function SceneSweep({ direction = 'left' }) { return <span className="scene-sweep" data-direction={direction} aria-hidden="true" /> }
 function OrbitalMark() { return <div className="orbital-mark" aria-hidden="true"><span /><span /><span /><b /></div> }
 function PageIntro() {
   const reduce = useReducedMotion()
@@ -174,7 +177,7 @@ function ServiceCards() {
   return <div className="services-cards" ref={sectionRef} onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)} onFocusCapture={() => setIsPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setIsPaused(false) }}>
     {serviceCards.map(({ number, title, body, icon: Icon, values }, index) => {
       const isFlipped = flippedCard === index
-      return <motion.article key={title} className={`service-card ${isFlipped ? 'is-flipped' : ''}`} role="button" tabIndex={0} aria-label={`${title}. ${isFlipped ? 'Hide details' : 'Show details'}`} aria-pressed={isFlipped} onClick={event => { if (!event.target.closest('a')) toggleCard(index) }} onKeyDown={event => onCardKeyDown(event, index)} initial={reduce ? false : { opacity: 0, y: 32, scale: .97 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, amount: .18 }} transition={{ duration: .7, delay: index * .11, ease }}>
+      return <motion.article key={title} className={`service-card ${isFlipped ? 'is-flipped' : ''}`} role="button" tabIndex={0} aria-label={`${title}. ${isFlipped ? 'Hide details' : 'Show details'}`} aria-pressed={isFlipped} onClick={event => { if (!event.target.closest('a')) toggleCard(index) }} onKeyDown={event => onCardKeyDown(event, index)} initial={reduce ? false : { opacity: 0, x: index % 2 ? 36 : -36, y: 32, scale: .97 }} whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }} viewport={{ once: true, amount: .18 }} transition={{ duration: .7, delay: index * .11, ease }}>
         <div className="service-card-inner">
           <div className="service-card-face service-card-front">
             <div className="service-card-top"><span>{number}</span><Icon aria-hidden="true" size={26} strokeWidth={1.55} /></div>
@@ -197,7 +200,7 @@ function WorkPortfolio() {
       {workFilters.map(filter => <button key={filter} type="button" role="tab" aria-selected={activeFilter === filter} className={activeFilter === filter ? 'is-active' : ''} onClick={() => setActiveFilter(filter)}><i />{filter}</button>)}
     </div>
     <div className={`project-grid work-filter-results projects-${visibleProjects.length}`} aria-live="polite">
-      {visibleProjects.map((project, index) => <motion.article key={project.id} className={`project-card ${project.className}`} initial={{ opacity: 0, y: 18, scale: .985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: .48, delay: index * .07, ease }}>
+      {visibleProjects.map((project, index) => <motion.article key={project.id} className={`project-card ${project.className}`} initial={{ opacity: 0, x: index % 2 ? 34 : -34, y: 18, scale: .985 }} animate={{ opacity: 1, x: 0, y: 0, scale: 1 }} transition={{ duration: .48, delay: index * .07, ease }}>
         <div className="work-project-frame">
           {project.image1200 ? <picture><source media="(max-width: 720px)" srcSet={project.image720} /><img src={project.image1200} alt={project.alt} loading="lazy" /></picture> : <><div className="project-pattern" /><Suspense fallback={null}><OrbitLottie className="project-orbit" /></Suspense></>}
           <div className="project-wash" /><div className="project-card-copy"><p>{project.number} / {project.eyebrow}</p><h3>{project.title[0]}<br />{project.title[1]}</h3><span>{project.detail}</span><a href={project.id === 'ai' ? '#services' : '#contact'} aria-label={project.id === 'ai' ? 'Explore AI MSG' : `Discuss a ${project.title.join(' ')} project`}>{project.id === 'ai' ? <Bot size={21} /> : <ArrowUpRight size={21} />}</a></div>
@@ -247,6 +250,20 @@ function App() {
     return () => { cancelAnimationFrame(frameId); lenis.destroy() }
   }, [reduceMotion])
 
+  useEffect(() => {
+    if (reduceMotion) return undefined
+
+    const scenes = [...document.querySelectorAll('[data-scene]')]
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('scene-is-active')
+      })
+    }, { threshold: 0.14, rootMargin: '0px 0px -9% 0px' })
+
+    scenes.forEach(scene => observer.observe(scene))
+    return () => observer.disconnect()
+  }, [reduceMotion])
+
   const handleSubmit = (event) => {
     event.preventDefault()
     if (isSending) return
@@ -271,38 +288,43 @@ function App() {
         <HeroSection />
 
         <section id="services" className="services section-pad" data-scene>
+          <SceneSweep direction="left" />
           <div className="services-orb"><OrbitalMark /></div><DolphinVisual variant="services" />
-          <div className="section-heading services-heading"><Reveal><p className="eyebrow">01 / WHAT WE DO</p><h2>Six disciplines.<br /><em>One direction.</em></h2></Reveal><Reveal delay={0.1}><p>Every discipline connects to the next, so your brand has one voice wherever people find it.</p></Reveal></div>
+          <div className="section-heading services-heading"><Reveal direction="left"><p className="eyebrow">01 / WHAT WE DO</p><h2>Six disciplines.<br /><em>One direction.</em></h2></Reveal><Reveal direction="right" delay={0.1}><p>Every discipline connects to the next, so your brand has one voice wherever people find it.</p></Reveal></div>
           <ServiceCards /><SectionMarker number="01" />
         </section>
 
         <section id="about" className="intro section-pad" data-scene>
-          <Reveal className="intro-label"><p className="eyebrow">02 / ABOUT ECHOVISION</p><div className="cyan-rule" /></Reveal>
-          <Reveal className="intro-copy" delay={0.07}><h2>We turn ambition into a <em>connected digital presence.</em></h2><p>EchoVision is a full-service digital marketing agency in Dubai. Our team combines creative direction, strategic planning and technical expertise to make brands clearer, more relevant and ready to grow.</p><p className="brand-story">Our whale-inspired identity stands for strength, continuity and the kind of client relationships built to last.</p><a className="inline-link" href="#services">Discover our capabilities <ArrowDownRight size={19} /></a></Reveal>
-          <div className="intro-panels"><Reveal delay={0.12}><article><span>Our mission</span><h3>Results that feel as good as they perform.</h3><p>Tailored digital solutions and tangible progress at every stage.</p></article></Reveal><Reveal delay={0.18}><article><span>Our vision</span><h3>A partner shaping what’s next.</h3><p>Helping ambitious businesses lead with confidence in a changing market.</p></article></Reveal></div>
+          <SceneSweep direction="right" />
+          <Reveal className="intro-label" direction="left"><p className="eyebrow">02 / ABOUT ECHOVISION</p><div className="cyan-rule" /></Reveal>
+          <Reveal className="intro-copy" direction="right" delay={0.07}><h2>We turn ambition into a <em>connected digital presence.</em></h2><p>EchoVision is a full-service digital marketing agency in Dubai. Our team combines creative direction, strategic planning and technical expertise to make brands clearer, more relevant and ready to grow.</p><p className="brand-story">Our whale-inspired identity stands for strength, continuity and the kind of client relationships built to last.</p><a className="inline-link" href="#services">Discover our capabilities <ArrowDownRight size={19} /></a></Reveal>
+          <div className="intro-panels"><Reveal direction="right" delay={0.12}><article><span>Our mission</span><h3>Results that feel as good as they perform.</h3><p>Tailored digital solutions and tangible progress at every stage.</p></article></Reveal><Reveal direction="right" delay={0.18}><article><span>Our vision</span><h3>A partner shaping what’s next.</h3><p>Helping ambitious businesses lead with confidence in a changing market.</p></article></Reveal></div>
         </section>
 
         <section id="work" className="work section-pad" data-scene>
-          <div className="section-heading work-heading"><Reveal><p className="eyebrow">03 / SELECTED WORK</p><h2>Recent <em>work.</em></h2></Reveal><Reveal delay={0.1}><p>Brand systems, campaigns and digital experiences built with a clear business purpose.</p></Reveal></div>
+          <SceneSweep direction="left" />
+          <div className="section-heading work-heading"><Reveal direction="left"><p className="eyebrow">03 / SELECTED WORK</p><h2>Recent <em>work.</em></h2></Reveal><Reveal direction="right" delay={0.1}><p>Brand systems, campaigns and digital experiences built with a clear business purpose.</p></Reveal></div>
           <WorkPortfolio />
           <div className="clients-band"><p>Trusted creative partner across the UAE</p><div><span>AL QASEEM</span><span>LEBANESE PALACE</span><span>EMIRATES MINTING</span><span>DIRECT LINE</span><span>ROZ</span></div></div><SectionMarker number="03" />
         </section>
 
         <section className="experience section-pad" data-scene>
+          <SceneSweep direction="right" />
           <div className="experience-portal" aria-hidden="true"><img src={portalReference} alt="" /><span /></div>
-          <Reveal className="experience-copy"><p className="eyebrow">WEB & APPS / 05</p><h2>The website becomes<br />the <em>product.</em></h2><p>We design digital experiences that communicate, guide and convert—turning your brand into something people can explore, understand and remember.</p><a className="inline-link" href="#contact">Discuss a digital experience <ArrowUpRight size={18} /></a></Reveal>
-          <div className="experience-values">{[['01', 'Immersive', 'A clear, considered experience at every touchpoint.'], ['02', 'Purposeful', 'Every interaction has a role in the customer journey.'], ['03', 'Built to perform', 'Designed for clarity, speed and conversion.']].map(([number, title, body], index) => <Reveal key={title} delay={.1 + index * .08}><article><span>{number}</span><h3>{title}</h3><p>{body}</p></article></Reveal>)}</div>
+          <Reveal className="experience-copy" direction="left"><p className="eyebrow">WEB & APPS / 05</p><h2>The website becomes<br />the <em>product.</em></h2><p>We design digital experiences that communicate, guide and convert—turning your brand into something people can explore, understand and remember.</p><a className="inline-link" href="#contact">Discuss a digital experience <ArrowUpRight size={18} /></a></Reveal>
+          <div className="experience-values">{[['01', 'Immersive', 'A clear, considered experience at every touchpoint.'], ['02', 'Purposeful', 'Every interaction has a role in the customer journey.'], ['03', 'Built to perform', 'Designed for clarity, speed and conversion.']].map(([number, title, body], index) => <Reveal key={title} direction="right" delay={.1 + index * .08}><article><span>{number}</span><h3>{title}</h3><p>{body}</p></article></Reveal>)}</div>
         </section>
 
         <section className="production section-pad" data-scene>
-          <Reveal className="production-intro"><p className="eyebrow">MEDIA PRODUCTION / 05</p><h2>Turn real moments into<br /><em>visual assets.</em></h2><p>Photography, video and digital storefronts shaped for the places people discover, explore and remember your brand.</p></Reveal>
-          <Reveal className="production-panel" delay={.12}><div className="production-panel-head"><span>Production</span><a href="#contact">Plan a production <ArrowUpRight size={17} /></a></div>{productionServices.map(([number, title, body]) => <article key={title}><span>{number}</span><div><h3>{title}</h3><p>{body}</p></div><ArrowUpRight size={18} /></article>)}</Reveal>
+          <SceneSweep direction="left" />
+          <Reveal className="production-intro" direction="left"><p className="eyebrow">MEDIA PRODUCTION / 05</p><h2>Turn real moments into<br /><em>visual assets.</em></h2><p>Photography, video and digital storefronts shaped for the places people discover, explore and remember your brand.</p></Reveal>
+          <Reveal className="production-panel" direction="right" delay={.12}><div className="production-panel-head"><span>Production</span><a href="#contact">Plan a production <ArrowUpRight size={17} /></a></div>{productionServices.map(([number, title, body]) => <article key={title}><span>{number}</span><div><h3>{title}</h3><p>{body}</p></div><ArrowUpRight size={18} /></article>)}</Reveal>
         </section>
 
-        <section className="process section-pad" data-scene><Reveal><p className="eyebrow">06 / HOW WE WORK</p><h2>Clear thinking.<br /><em>Visible momentum.</em></h2></Reveal><div className="process-steps"><MomentumRail />{processSteps.map(([number, title, body], index) => <Reveal className="process-step" key={title} delay={index * 0.1}><article><span>{number}</span><h3>{title}</h3><p>{body}</p><ChevronRight size={18} /></article></Reveal>)}</div></section>
+        <section className="process section-pad" data-scene><SceneSweep direction="right" /><Reveal direction="left"><p className="eyebrow">06 / HOW WE WORK</p><h2>Clear thinking.<br /><em>Visible momentum.</em></h2></Reveal><div className="process-steps"><MomentumRail />{processSteps.map(([number, title, body], index) => <Reveal className="process-step" direction={index % 2 ? 'right' : 'left'} key={title} delay={index * 0.1}><article><span>{number}</span><h3>{title}</h3><p>{body}</p><ChevronRight size={18} /></article></Reveal>)}</div></section>
 
-        <section id="contact" className="contact section-pad" data-scene><div className="contact-background" aria-hidden="true" /><Reveal className="contact-copy"><p className="eyebrow">07 / START A CONVERSATION</p><h2>Make your next move <em>matter.</em></h2><p>Tell us where you want to go. We’ll bring the ideas, people and digital tools to help get you there.</p><div className="contact-direct"><a href="tel:+971521617218"><Phone size={17} /> +971 52 161 7218</a><a href="mailto:info@echovision.ae"><Send size={16} /> info@echovision.ae</a></div></Reveal>
-          <Reveal className="form-wrap" delay={0.1}><form className="lead-form" onSubmit={handleSubmit}>
+        <section id="contact" className="contact section-pad" data-scene><SceneSweep direction="left" /><div className="contact-background" aria-hidden="true" /><Reveal className="contact-copy" direction="left"><p className="eyebrow">07 / START A CONVERSATION</p><h2>Make your next move <em>matter.</em></h2><p>Tell us where you want to go. We’ll bring the ideas, people and digital tools to help get you there.</p><div className="contact-direct"><a href="tel:+971521617218"><Phone size={17} /> +971 52 161 7218</a><a href="mailto:info@echovision.ae"><Send size={16} /> info@echovision.ae</a></div></Reveal>
+          <Reveal className="form-wrap" direction="right" delay={0.1}><form className="lead-form" onSubmit={handleSubmit}>
             <div className="form-question"><span>01</span><fieldset><legend>What can we help with?</legend>{['I need more customers', 'I need a clearer brand', 'I need content that performs', 'I need a website or app'].map(label => <label className="choice" key={label}><input type="radio" name="problem" checked={form.problem === label} onChange={() => setForm({ ...form, problem: label })} /><span>{label}</span></label>)}</fieldset></div>
             <div className="form-question"><span>02</span><fieldset><legend>Tell us a little more</legend><label className="sr-only" htmlFor="industry">Industry</label><select id="industry" value={form.industry} required onChange={event => setForm({ ...form, industry: event.target.value })}><option value="">Your industry</option><option>Real estate</option><option>Hospitality</option><option>Luxury retail</option><option>Healthcare & wellness</option><option>Other</option></select><div className="budget-row">{['Under $5K', '$5K – $10K', '$10K+'].map(label => <label key={label}><input type="radio" name="budget" checked={form.budget === label} onChange={() => setForm({ ...form, budget: label })} /><span>{label}</span></label>)}</div></fieldset></div>
             <div className="form-question form-details"><span>03</span><fieldset><legend>How should we reach you?</legend><label>Name<input required value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} autoComplete="name" /></label><label>Company<input value={form.company} onChange={event => setForm({ ...form, company: event.target.value })} autoComplete="organization" /></label><label>Email<input required type="email" value={form.email} onChange={event => setForm({ ...form, email: event.target.value })} autoComplete="email" /></label><label>Phone / WhatsApp<input type="tel" value={form.phone} onChange={event => setForm({ ...form, phone: event.target.value })} autoComplete="tel" /></label><button className="button button-primary form-submit" type="submit" disabled={isSending} aria-busy={isSending}>{sent ? <><Check size={17} /> Request received</> : isSending ? 'Sending…' : <>Book a free consultation <ArrowUpRight size={17} /></>}</button><p className="form-success" role="status" aria-live="polite">{sent ? 'Thank you. The EchoVision team will be ready to continue the conversation.' : ''}</p></fieldset></div>
