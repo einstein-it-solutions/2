@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
+import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 import Lenis from 'lenis'
 import { ArrowDownRight, ArrowUpRight, Bot, Camera, Check, ChevronRight, CircleDotDashed, Code2, Globe2, Megaphone, Menu, PenTool, Phone, Send, Share2, X } from 'lucide-react'
 import qaseemImage1200 from './assets/optimized/al-qaseem-1200.webp'
@@ -38,6 +38,16 @@ const heroServices = [
 const heroParticles = [
   [8, 16, 1.1], [19, 70, .8], [34, 10, .8], [45, 83, 1], [57, 22, .8], [66, 69, 1.2], [77, 35, .8], [89, 75, .9], [95, 16, .7], [52, 48, .7], [73, 9, .8], [12, 45, .7],
 ]
+const orbitingPlanets = [
+  { id: 'a', track: 'orbit-track-a', label: 'Signal' },
+  { id: 'b', track: 'orbit-track-b', label: 'Motion' },
+  { id: 'c', track: 'orbit-track-c', label: 'Light' },
+  { id: 'd', track: 'orbit-track-d', label: 'Data' },
+  { id: 'e', track: 'orbit-track-e', label: 'Reach' },
+  { id: 'f', track: 'orbit-track-f', label: 'Idea' },
+  { id: 'g', track: 'orbit-track-g', label: 'Pulse' },
+  { id: 'h', track: 'orbit-track-h', label: 'Flow' },
+]
 const serviceCardMeta = [
   { icon: PenTool, values: ['Strategic identity', 'A considered first impression'] },
   { icon: Megaphone, values: ['Campaign concepts', 'Social content that travels'] },
@@ -52,6 +62,9 @@ const workProjects = [
   { id: 'qaseem', number: '01', eyebrow: 'DIGITAL EXPERIENCE', title: ['Al Qaseem', 'Group'], detail: 'Website / Mobile app / Social media', filters: ['Web & apps', 'Digital marketing'], image1200: qaseemImage1200, image720: qaseemImage720, alt: 'Al Qaseem Group digital experience', className: 'project-card-wide' },
   { id: 'palace', number: '02', eyebrow: 'GROWTH ECOSYSTEM', title: ['Lebanese', 'Palace'], detail: 'Photography / E-commerce / Social media', filters: ['Media production', 'Digital marketing'], image1200: palaceImage1200, image720: palaceImage720, alt: 'Lebanese Palace food and product photography', className: '' },
   { id: 'ai', number: '03', eyebrow: 'AI & AUTOMATION', title: ['Always', 'available.'], detail: 'AI MSG for WhatsApp, Instagram and Facebook', filters: ['AI MSG'], className: 'project-card-cyan' },
+  { id: 'atelier', number: '04', eyebrow: 'BRAND CONCEPT', title: ['The', 'Atelier'], detail: 'Identity system / Packaging / Art direction', filters: ['Branding'], className: 'project-card-silver' },
+  { id: 'motion', number: '05', eyebrow: 'CAMPAIGN CONCEPT', title: ['Move', 'forward.'], detail: 'Campaign concept / Paid social / Reporting', filters: ['Digital marketing'], className: 'project-card-electric' },
+  { id: 'product', number: '06', eyebrow: 'WEB CONCEPT', title: ['Made to', 'matter.'], detail: 'Website design / Digital product / Conversion', filters: ['Web & apps'], className: 'project-card-lilac' },
 ]
 const productionServices = [
   ['01', 'Product & food', 'Photography for restaurants, retail and product launches.'],
@@ -67,7 +80,24 @@ function Reveal({ children, className = '', delay = 0, direction = 'up' }) {
 }
 
 function SectionMarker({ number }) { return <div className="section-marker" aria-hidden="true"><span>{number}</span><i /><i /><i /></div> }
-function SceneSweep({ direction = 'left' }) { return <span className="scene-sweep" data-direction={direction} aria-hidden="true" /> }
+function SceneSweep({ direction = 'left' }) {
+  const reduce = useReducedMotion()
+  const moveSweep = event => {
+    if (reduce || event.pointerType === 'touch') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100
+    event.currentTarget.style.setProperty('--sweep-x', `${x.toFixed(1)}%`)
+    event.currentTarget.style.setProperty('--sweep-y', `${y.toFixed(1)}%`)
+    event.currentTarget.classList.add('is-pointer-active')
+  }
+  const leaveSweep = event => {
+    event.currentTarget.classList.remove('is-pointer-active')
+    event.currentTarget.style.removeProperty('--sweep-x')
+    event.currentTarget.style.removeProperty('--sweep-y')
+  }
+  return <span className="scene-sweep" data-direction={direction} aria-hidden="true" onPointerMove={moveSweep} onPointerLeave={leaveSweep}><b /><i /></span>
+}
 function OrbitalMark() { return <div className="orbital-mark" aria-hidden="true"><span /><span /><span /><b /></div> }
 function PageIntro() {
   const reduce = useReducedMotion()
@@ -81,10 +111,50 @@ function PageIntro() {
 }
 function DolphinVisual({ variant = 'hero' }) {
   const reduce = useReducedMotion()
-  return <motion.div className={`dolphin-visual dolphin-visual-${variant}`} aria-hidden="true" initial={reduce ? false : { opacity: 0, scale: .86, y: 28, rotateZ: -8 }} animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 1, y: [0, -14, 0], rotateZ: [-5, -1, -5], rotateY: [0, 4, 0] }} transition={{ opacity: { duration: 1, delay: .5 }, scale: { duration: 1.1, delay: .5, ease }, y: { duration: 6.4, repeat: Infinity, ease: 'easeInOut' }, rotateZ: { duration: 6.4, repeat: Infinity, ease: 'easeInOut' }, rotateY: { duration: 6.4, repeat: Infinity, ease: 'easeInOut' } }}><picture><source media="(max-width: 700px)" srcSet={wireframeDolphin620} /><img src={wireframeDolphin1000} alt="" /></picture><span /><span /></motion.div>
+  const interactive = variant === 'services'
+  const moveDolphin = event => {
+    if (reduce || !interactive || event.pointerType === 'touch') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = (event.clientX - bounds.left) / bounds.width - .5
+    const y = (event.clientY - bounds.top) / bounds.height - .5
+    event.currentTarget.style.setProperty('--dolphin-x', `${(x * 16).toFixed(1)}px`)
+    event.currentTarget.style.setProperty('--dolphin-y', `${(y * 12).toFixed(1)}px`)
+    event.currentTarget.style.setProperty('--dolphin-turn', `${(x * 7).toFixed(2)}deg`)
+    event.currentTarget.style.setProperty('--dolphin-pitch', `${(-y * 3.6).toFixed(2)}deg`)
+    event.currentTarget.style.setProperty('--dolphin-face-x', `${(x * 8).toFixed(1)}px`)
+    event.currentTarget.style.setProperty('--dolphin-face-y', `${(y * 6).toFixed(1)}px`)
+    event.currentTarget.classList.add('is-engaged')
+  }
+  const resetDolphin = event => {
+    event.currentTarget.classList.remove('is-engaged')
+    ;['--dolphin-x', '--dolphin-y', '--dolphin-turn', '--dolphin-pitch', '--dolphin-face-x', '--dolphin-face-y'].forEach(name => event.currentTarget.style.removeProperty(name))
+  }
+  return <motion.div className={`dolphin-visual dolphin-visual-${variant}`} aria-hidden="true" onPointerMove={moveDolphin} onPointerLeave={resetDolphin} initial={reduce ? false : { opacity: 0, scale: .86, y: 28, rotateZ: -8 }} animate={reduce ? { opacity: 1 } : { opacity: 1, scale: 1, y: [0, -14, 0], rotateZ: [-5, -1, -5], rotateY: [0, 4, 0] }} transition={{ opacity: { duration: 1, delay: .5 }, scale: { duration: 1.1, delay: .5, ease }, y: { duration: 6.4, repeat: Infinity, ease: 'easeInOut' }, rotateZ: { duration: 6.4, repeat: Infinity, ease: 'easeInOut' }, rotateY: { duration: 6.4, repeat: Infinity, ease: 'easeInOut' } }}><picture><source media="(max-width: 700px)" srcSet={wireframeDolphin620} /><img src={wireframeDolphin1000} alt="" /></picture><span className="dolphin-face-scan" /><span className="dolphin-spark" /></motion.div>
 }
 function HeroOrbit({ activeService, onSelect, reduce }) {
-  return <div className="hero-orbit-map" aria-label="EchoVision capabilities map">
+  const orbitRef = useRef(null)
+  const movePlanets = event => {
+    if (reduce || event.pointerType === 'touch' || !orbitRef.current) return
+    orbitRef.current.querySelectorAll('.hero-orbit-planet').forEach(planet => {
+      const planetBounds = planet.getBoundingClientRect()
+      const deltaX = planetBounds.left + planetBounds.width / 2 - event.clientX
+      const deltaY = planetBounds.top + planetBounds.height / 2 - event.clientY
+      const distance = Math.max(1, Math.hypot(deltaX, deltaY))
+      const strength = Math.max(0, 1 - distance / 180) * 32
+      planet.style.setProperty('--planet-push-x', `${(deltaX / distance * strength).toFixed(1)}px`)
+      planet.style.setProperty('--planet-push-y', `${(deltaY / distance * strength).toFixed(1)}px`)
+    })
+    orbitRef.current.classList.add('is-orbit-engaged')
+  }
+  const resetPlanets = () => {
+    if (!orbitRef.current) return
+    orbitRef.current.classList.remove('is-orbit-engaged')
+    orbitRef.current.querySelectorAll('.hero-orbit-planet').forEach(planet => {
+      planet.style.removeProperty('--planet-push-x')
+      planet.style.removeProperty('--planet-push-y')
+    })
+  }
+  return <div ref={orbitRef} className="hero-orbit-map" aria-label="EchoVision capabilities map" onPointerMove={movePlanets} onPointerLeave={resetPlanets}>
     <svg className="hero-orbit-svg" viewBox="0 0 600 600" aria-hidden="true">
       <circle cx="300" cy="300" r="104" /><circle cx="300" cy="300" r="180" /><circle cx="300" cy="300" r="252" />
       {heroServices.map((service, index) => <motion.line key={service.title} className={activeService === index ? 'is-active' : ''} x1="300" y1="300" x2={service.x * 6} y2={service.y * 6} initial={reduce ? false : { pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: activeService === index ? 1 : .72 }} transition={{ pathLength: { duration: 1.25, delay: .36 + index * .11, ease }, opacity: { duration: .35 } }} />)}
@@ -92,8 +162,9 @@ function HeroOrbit({ activeService, onSelect, reduce }) {
       <circle className="hero-orbit-core-line" cx="300" cy="300" r="54" />
     </svg>
     <div className="hero-orbit-center"><span>Creative tech</span><strong>Echo<em>Vision</em></strong><i /></div>
-    {heroServices.map((service, index) => <div key={service.title} className="hero-service-position" style={{ '--x': `${service.x}%`, '--y': `${service.y}%` }}>
-      <motion.button type="button" className={`hero-service-node ${activeService === index ? 'is-active' : ''}`} aria-label={`Explore ${service.title}: ${service.body}`} aria-pressed={activeService === index} onClick={() => onSelect(index)} animate={reduce ? undefined : { y: [0, index % 2 ? -6 : 5, 0] }} whileHover={{ y: -4, scale: 1.03 }} whileFocus={{ y: -4, scale: 1.03 }} transition={{ y: { duration: 5.4 + index * .35, delay: service.delay, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: .2 } }}>
+    {orbitingPlanets.map(planet => <span className={`hero-orbit-planet-track ${planet.track}`} key={planet.id}><span className="hero-orbit-planet" aria-label={planet.label} /></span>)}
+    {heroServices.map((service, index) => <div key={service.title} className="hero-service-position" data-x={service.x} data-y={service.y} style={{ '--x': `${service.x}%`, '--y': `${service.y}%` }}>
+      <motion.button type="button" className={`hero-service-node ${activeService === index ? 'is-active' : ''}`} aria-label={`Explore ${service.title}: ${service.body}`} aria-pressed={activeService === index} onClick={() => onSelect(index)}>
         <span>{service.short}</span><b>{service.title}</b><i>{service.body}</i>
       </motion.button>
     </div>)}
@@ -125,14 +196,13 @@ function HeroSection() {
     <motion.div className="hero-atmosphere" aria-hidden="true" style={reduce ? undefined : { x: backgroundX, y: backgroundY }}><span className="hero-noise" /><span className="hero-glow glow-one" /><span className="hero-glow glow-two" /><span className="hero-glow glow-three" />{heroParticles.map(([x, y, size], index) => <i key={index} className="hero-particle" style={{ '--x': `${x}%`, '--y': `${y}%`, '--size': `${size}px`, '--delay': `${index * -.52}s` }} />)}</motion.div>
     <div className="hero-grid" aria-hidden="true" />
     <div className="hero-copy">
-      <motion.div className="hero-message" key={message.key} initial={reduce ? false : { opacity: 0, y: 16, filter: 'blur(5px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: activeService === -1 ? .72 : .42, ease }}>
-          <motion.div className="hero-kicker" initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .62, delay: activeService === -1 ? .08 : 0, ease }}><span /> {message.kicker.split(' • ')[0]} <i /> {message.kicker.split(' • ')[1]}</motion.div>
-          <h1 className="hero-title"><motion.span initial={reduce ? false : { opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .72, delay: activeService === -1 ? .15 : .05, ease }}>{message.headline[0]}</motion.span><motion.em initial={reduce ? false : { opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .72, delay: activeService === -1 ? .26 : .13, ease }}>{message.headline[1]}</motion.em></h1>
-          <motion.p className="hero-lead" initial={reduce ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .64, delay: activeService === -1 ? .4 : .22, ease }}>{message.body}</motion.p>
+      <motion.div className="hero-message" key={message.key} initial={reduce ? false : { opacity: 0, y: 16, filter: 'blur(5px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: activeService === -1 ? .72 : .66, ease }}>
+          <motion.div className="hero-kicker" initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: activeService === -1 ? .62 : .68, delay: activeService === -1 ? .08 : .06, ease }}><span /> {message.kicker.split(' • ')[0]} <i /> {message.kicker.split(' • ')[1]}</motion.div>
+          <h1 className="hero-title"><motion.span initial={reduce ? false : { opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: activeService === -1 ? .72 : .8, delay: activeService === -1 ? .15 : .14, ease }}>{message.headline[0]}</motion.span><motion.em initial={reduce ? false : { opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: activeService === -1 ? .72 : .8, delay: activeService === -1 ? .26 : .3, ease }}>{message.headline[1]}</motion.em></h1>
+          <motion.p className="hero-lead" initial={reduce ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: activeService === -1 ? .64 : .72, delay: activeService === -1 ? .4 : .48, ease }}>{message.body}</motion.p>
       </motion.div>
       <motion.div initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .64, delay: .56, ease }} className="hero-actions"><a className="button button-primary" href="#contact">Start a project <ArrowUpRight size={17} /></a><a className="button button-quiet" href="#work">Explore work <ArrowDownRight size={18} /></a></motion.div>
     </div>
-    <DolphinVisual variant="hero" />
     <HeroOrbit activeService={activeService === -1 ? orbitFocus : activeService} onSelect={setActiveService} reduce={reduce} />
     {activeService !== -1 && !reduce && <motion.span key={message.key} className="hero-flash-word" aria-hidden="true" initial={{ opacity: 0, x: '-18%', clipPath: 'inset(0 100% 0 0)' }} animate={{ opacity: [0, .48, 0], x: ['-18%', '8%', '24%'], clipPath: ['inset(0 100% 0 0)', 'inset(0 0% 0 0)', 'inset(0 0% 0 100%)'] }} transition={{ duration: .9, ease }}>{heroServices[activeService].short}</motion.span>}
     <div className="hero-signal"><span>LIVE</span><i /><b>01. DUBAI</b></div><SectionMarker number="01" />
@@ -173,14 +243,28 @@ function ServiceCards() {
     event.preventDefault()
     toggleCard(index)
   }
+  const moveCard = event => {
+    if (reduce || event.pointerType === 'touch') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = (event.clientX - bounds.left) / bounds.width - .5
+    const y = (event.clientY - bounds.top) / bounds.height - .5
+    event.currentTarget.style.setProperty('--service-tilt-x', `${(-y * 5).toFixed(2)}deg`)
+    event.currentTarget.style.setProperty('--service-tilt-y', `${(x * 6).toFixed(2)}deg`)
+    event.currentTarget.style.setProperty('--service-glow-x', `${((x + .5) * 100).toFixed(1)}%`)
+    event.currentTarget.style.setProperty('--service-glow-y', `${((y + .5) * 100).toFixed(1)}%`)
+  }
+  const resetCard = event => {
+    event.currentTarget.style.removeProperty('--service-tilt-x')
+    event.currentTarget.style.removeProperty('--service-tilt-y')
+  }
 
   return <div className="services-cards" ref={sectionRef} onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)} onFocusCapture={() => setIsPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setIsPaused(false) }}>
     {serviceCards.map(({ number, title, body, icon: Icon, values }, index) => {
       const isFlipped = flippedCard === index
-      return <motion.article key={title} className={`service-card ${isFlipped ? 'is-flipped' : ''}`} role="button" tabIndex={0} aria-label={`${title}. ${isFlipped ? 'Hide details' : 'Show details'}`} aria-pressed={isFlipped} onClick={event => { if (!event.target.closest('a')) toggleCard(index) }} onKeyDown={event => onCardKeyDown(event, index)} initial={reduce ? false : { opacity: 0, x: index % 2 ? 36 : -36, y: 32, scale: .97 }} whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }} viewport={{ once: true, amount: .18 }} transition={{ duration: .7, delay: index * .11, ease }}>
+      return <motion.article key={title} className={`service-card ${isFlipped ? 'is-flipped' : ''}`} role="button" tabIndex={0} aria-label={`${title}. ${isFlipped ? 'Hide details' : 'Show details'}`} aria-pressed={isFlipped} onClick={event => { if (!event.target.closest('a')) toggleCard(index) }} onKeyDown={event => onCardKeyDown(event, index)} onPointerMove={moveCard} onPointerLeave={resetCard} initial={reduce ? false : { opacity: 0, x: index % 2 ? 36 : -36, y: 32, scale: .97 }} whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }} viewport={{ once: true, amount: .18 }} transition={{ duration: .7, delay: index * .11, ease }}>
         <div className="service-card-inner">
           <div className="service-card-face service-card-front">
-            <div className="service-card-top"><span>{number}</span><Icon aria-hidden="true" size={26} strokeWidth={1.55} /></div>
+            <span className="service-card-signal" aria-hidden="true"><i /><i /><i /></span><div className="service-card-top"><span>{number}</span><Icon aria-hidden="true" size={26} strokeWidth={1.55} /></div>
             <div><h3>{title}</h3><p>{body}</p></div><small>View details <ArrowUpRight size={15} /></small>
           </div>
           <div className="service-card-face service-card-back">
@@ -193,27 +277,74 @@ function ServiceCards() {
 }
 function WorkPortfolio() {
   const [activeFilter, setActiveFilter] = useState('All work')
+  const reduce = useReducedMotion()
+  const pointerX = useMotionValue(-70)
+  const pointerY = useMotionValue(-70)
+  const orbitX = useSpring(pointerX, { stiffness: 150, damping: 24, mass: .34 })
+  const orbitY = useSpring(pointerY, { stiffness: 150, damping: 24, mass: .34 })
+  const [pointerActive, setPointerActive] = useState(false)
   const visibleProjects = activeFilter === 'All work' ? workProjects : workProjects.filter(project => project.filters.includes(activeFilter))
+  const moveOrbit = event => {
+    if (reduce || event.pointerType === 'touch') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    pointerX.set(event.clientX - bounds.left - 44)
+    pointerY.set(event.clientY - bounds.top - 44)
+    setPointerActive(true)
+  }
+  const resetOrbit = () => setPointerActive(false)
+  const tiltProject = event => {
+    if (reduce || event.pointerType === 'touch') return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = (event.clientX - bounds.left) / bounds.width - .5
+    const y = (event.clientY - bounds.top) / bounds.height - .5
+    event.currentTarget.style.setProperty('--tilt-x', `${(-y * 4).toFixed(2)}deg`)
+    event.currentTarget.style.setProperty('--tilt-y', `${(x * 5).toFixed(2)}deg`)
+    event.currentTarget.style.setProperty('--cursor-x', `${((x + .5) * 100).toFixed(1)}%`)
+    event.currentTarget.style.setProperty('--cursor-y', `${((y + .5) * 100).toFixed(1)}%`)
+    event.currentTarget.style.setProperty('--image-x', `${(x * -12).toFixed(1)}px`)
+    event.currentTarget.style.setProperty('--image-y', `${(y * -10).toFixed(1)}px`)
+  }
+  const resetProject = event => {
+    event.currentTarget.style.removeProperty('--tilt-x')
+    event.currentTarget.style.removeProperty('--tilt-y')
+    event.currentTarget.style.removeProperty('--image-x')
+    event.currentTarget.style.removeProperty('--image-y')
+  }
 
-  return <div className="work-portfolio">
+  return <div className="work-portfolio" onPointerMove={moveOrbit} onPointerLeave={resetOrbit}>
+    <motion.span className="work-pointer-orbit" aria-hidden="true" style={reduce ? undefined : { x: orbitX, y: orbitY, opacity: pointerActive ? 1 : 0 }} />
     <div className="work-filters" role="tablist" aria-label="Filter selected work">
-      {workFilters.map(filter => <button key={filter} type="button" role="tab" aria-selected={activeFilter === filter} className={activeFilter === filter ? 'is-active' : ''} onClick={() => setActiveFilter(filter)}><i />{filter}</button>)}
+      {workFilters.map(filter => <motion.button key={filter} type="button" role="tab" aria-selected={activeFilter === filter} className={activeFilter === filter ? 'is-active' : ''} onClick={() => setActiveFilter(filter)} whileTap={reduce ? undefined : { scale: .96 }}><i />{filter}</motion.button>)}
     </div>
     <div className={`project-grid work-filter-results projects-${visibleProjects.length}`} aria-live="polite">
-      {visibleProjects.map((project, index) => <motion.article key={project.id} className={`project-card ${project.className}`} initial={{ opacity: 0, x: index % 2 ? 34 : -34, y: 18, scale: .985 }} animate={{ opacity: 1, x: 0, y: 0, scale: 1 }} transition={{ duration: .48, delay: index * .07, ease }}>
-        <div className="work-project-frame">
+      <AnimatePresence mode="wait">
+      {visibleProjects.map((project, index) => <motion.article layout key={`${activeFilter}-${project.id}`} className={`project-card ${project.className}`} initial={reduce ? false : { opacity: 0, x: index % 2 ? 100 : -100, y: 44, scale: .9, rotate: index % 2 ? 3 : -3, filter: 'blur(12px)' }} animate={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0, filter: 'blur(0px)' }} exit={reduce ? undefined : { opacity: 0, x: index % 2 ? -76 : 76, y: -28, scale: .94, rotate: index % 2 ? -2 : 2, filter: 'blur(10px)' }} transition={{ duration: .68, delay: index * .09, ease }}>
+        <div className="work-project-frame" onPointerMove={tiltProject} onPointerLeave={resetProject}>
           {project.image1200 ? <picture><source media="(max-width: 720px)" srcSet={project.image720} /><img src={project.image1200} alt={project.alt} loading="lazy" /></picture> : <><div className="project-pattern" /><Suspense fallback={null}><OrbitLottie className="project-orbit" /></Suspense></>}
           <div className="project-wash" /><div className="project-card-copy"><p>{project.number} / {project.eyebrow}</p><h3>{project.title[0]}<br />{project.title[1]}</h3><span>{project.detail}</span><a href={project.id === 'ai' ? '#services' : '#contact'} aria-label={project.id === 'ai' ? 'Explore AI MSG' : `Discuss a ${project.title.join(' ')} project`}>{project.id === 'ai' ? <Bot size={21} /> : <ArrowUpRight size={21} />}</a></div>
         </div>
       </motion.article>)}
+      </AnimatePresence>
     </div>
   </div>
 }
 function MomentumRail() {
   const reduce = useReducedMotion()
-  return <motion.div className="momentum-rail" aria-hidden="true" initial={reduce ? false : { opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, amount: .35 }} transition={{ duration: .45, delay: .2 }}>
+  const railRef = useRef(null)
+  const pointerX = useMotionValue(0)
+  const smoothPointerX = useSpring(pointerX, { stiffness: 190, damping: 26, mass: .28 })
+  const [isPointerActive, setIsPointerActive] = useState(false)
+  const updatePointer = event => {
+    const rail = railRef.current
+    if (!rail || reduce) return
+    const bounds = rail.getBoundingClientRect()
+    pointerX.set(Math.max(6, Math.min(bounds.width - 6, event.clientX - bounds.left)))
+    setIsPointerActive(true)
+  }
+
+  return <motion.div ref={railRef} className="momentum-rail" aria-hidden="true" onPointerEnter={updatePointer} onPointerMove={updatePointer} onPointerLeave={() => setIsPointerActive(false)} initial={reduce ? false : { opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, amount: .35 }} transition={{ duration: .45, delay: .2 }}>
     <motion.span className="momentum-rail-line" initial={reduce ? false : { scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true, amount: .35 }} transition={{ duration: 1.15, delay: .18, ease }} />
-    <i />
+    <motion.i className="momentum-rail-cursor" style={reduce ? undefined : { left: smoothPointerX, opacity: isPointerActive ? 1 : .42 }} />
     {processSteps.map(([, title], index) => <b key={title} style={{ '--node-position': `${index * 33.333}%`, '--node-delay': `${index * .92}s` }} />)}
   </motion.div>
 }
