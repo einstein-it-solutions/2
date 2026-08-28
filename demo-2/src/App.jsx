@@ -13,6 +13,7 @@ import dubaiImage960 from './assets/optimized/hero-dubai-960.webp'
 import portalReference from './assets/optimized/portal-reference-1100.webp'
 import playgroundDolphin from './assets/echovision-real-dolphin.png'
 import digitalWorkstation from './assets/digital-workstation.png'
+import echoVortexBackground from './assets/echo-vortex-background.png'
 
 const OrbitLottie = lazy(() => import('./components/OrbitLottie'))
 
@@ -57,6 +58,7 @@ const workProjects = [
   { id: 'palace', number: '02', eyebrow: 'GROWTH ECOSYSTEM', title: ['Lebanese', 'Palace'], detail: 'Photography / E-commerce / Social media', filters: ['Media production', 'Digital marketing'], image1200: palaceImage1200, image720: palaceImage720, alt: 'Lebanese Palace food and product photography', className: '' },
   { id: 'creative', number: '03', eyebrow: 'CREATIVE DIRECTION', title: ['Ideas', 'in motion.'], detail: 'Brand systems / Creative design / Campaign assets', filters: ['Creative design', 'Branding'], className: 'project-card-cyan' },
   { id: 'dubai', number: '04', eyebrow: 'CITY CAMPAIGN', title: ['Dubai', 'Forward.'], detail: 'Digital campaign / Social content / Media', filters: ['Digital marketing', 'Media production'], image1200: dubaiImage1600, image720: dubaiImage960, alt: 'Dubai city digital campaign concept', className: '' },
+  { id: 'digital-lab', number: '05', eyebrow: 'DIGITAL PRODUCT', title: ['Digital', 'Lab.'], detail: 'Web & app development / Digital marketing', filters: ['Web & apps', 'Digital marketing'], image1200: digitalWorkstation, image720: digitalWorkstation, alt: 'Digital product experience', className: '' },
 ]
 const productionServices = [
   ['01', 'Product & food', 'Photography for restaurants, retail and product launches.'],
@@ -71,14 +73,35 @@ function Reveal({ children, className = '', delay = 0 }) {
 
 function SectionMarker({ number }) { return <div className="section-marker" aria-hidden="true"><span>{number}</span><i /><i /><i /></div> }
 function OrbitalMark() { return <div className="orbital-mark" aria-hidden="true"><span /><span /><span /><b /></div> }
+function SectionTransition({ hero = false }) {
+  const reduce = useReducedMotion()
+  return <motion.div className={`section-transition ${hero ? 'section-transition-hero' : ''}`} aria-hidden="true" initial={reduce ? false : { opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, amount: .65 }} transition={{ duration: .32 }}>
+    <motion.span className="section-transition-wave" initial={reduce ? false : { x: '-72%', scaleX: .38, opacity: 0 }} whileInView={{ x: ['-72%', '-18%', '58%'], scaleX: [.38, 1, 1.26], opacity: [0, .94, 0] }} viewport={{ once: true, amount: .65 }} transition={{ duration: hero ? 2.05 : 1.65, ease }} />
+    <motion.span className="section-transition-orb" initial={reduce ? false : { scale: .2, opacity: 0 }} whileInView={{ scale: [.2, 1.15, 1.85], opacity: [0, .85, 0] }} viewport={{ once: true, amount: .65 }} transition={{ duration: hero ? 1.6 : 1.28, delay: .2, ease }}><i /><i /><b /></motion.span>
+    <motion.i className="section-transition-line" initial={reduce ? false : { scaleX: 0, opacity: 0 }} whileInView={{ scaleX: [0, 1, 1], opacity: [0, .92, 0] }} viewport={{ once: true, amount: .65 }} transition={{ duration: 1.32, delay: .12, ease }} />
+  </motion.div>
+}
 function PageIntro() {
   const reduce = useReducedMotion()
   if (reduce) return null
-  return <motion.div className="page-intro" aria-hidden="true" initial={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)' }} animate={{ clipPath: 'polygon(0 0, 100% 0, 100% 0, 68% 0, 50% 4%, 32% 0, 0 0)' }} transition={{ duration: 1.15, delay: .12, ease }}>
-    <motion.div className="page-intro-brand" initial={{ opacity: 0, y: 18 }} animate={{ opacity: [0, 1, 1, 0], y: [18, 0, 0, -14] }} transition={{ duration: .78, delay: .16, ease }}><span className="brand-signal" /><strong>Echo</strong>Vision<sup>®</sup></motion.div>
-    <motion.div className="page-intro-orbit" initial={{ opacity: 0, scale: .64, rotate: -34 }} animate={{ opacity: [0, 1, 1, 0], scale: [.64, 1, 1.08, 1.34], rotate: [-34, 0, 18, 36] }} transition={{ duration: .92, delay: .08, ease }}><i /><i /><b /></motion.div>
-    <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: [0, 1, 1, 0], y: [12, 0, 0, -8] }} transition={{ duration: .72, delay: .25, ease }}>DUBAI / UAE — CREATIVE BUSINESS PARTNER</motion.p>
-    <motion.em initial={{ x: '-110%', scaleX: .25, opacity: 0 }} animate={{ x: ['-110%', '0%', '120%'], scaleX: [.25, 1, .4], opacity: [0, 1, 0] }} transition={{ duration: .8, delay: .18, ease }} />
+  return <motion.div className="page-intro" aria-hidden="true" initial={{ clipPath: 'inset(0 0 0 0)', opacity: 1, scale: 1, filter: 'blur(0px)' }} animate={{ clipPath: ['inset(0 0 0 0)', 'inset(0 0 0 0)', 'polygon(0 0,100% 0,100% 0,66% 0,50% 4%,34% 0,0 0)'], opacity: [1, 1, 0], scale: [1, 1.012, 1.045], filter: ['blur(0px)', 'blur(0px)', 'blur(3px)'] }} transition={{ duration: 1.92, delay: 3.72, times: [0, .42, 1], ease }}>
+    <div className="page-intro-grain" />
+    <motion.div className="page-intro-aura" initial={{ opacity: 0, scale: .62 }} animate={{ opacity: [.05, .95, .42], scale: [.62, 1, 1.16] }} transition={{ duration: 1.85, delay: .2, ease }} />
+    <motion.div className="page-intro-rings" initial={{ opacity: 0, rotate: -30, scale: .76 }} animate={{ opacity: [.05, .8, .34], rotate: [-30, 5, 26], scale: [.76, 1, 1.16] }} transition={{ duration: 2.8, delay: .16, ease }}><i /><i /><i /></motion.div>
+    <motion.div className="page-intro-dolphin" style={{ '--dolphin-mask': `url(${playgroundDolphin})` }} initial={{ opacity: 0, y: 16, rotate: -5 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: .52, delay: .35, ease }}>
+      <motion.span className="page-intro-dolphin-glow" initial={{ opacity: 0, scale: .9 }} animate={{ opacity: [.05, .45, .24], scale: [.9, 1.12, 1.04] }} transition={{ duration: 2.5, delay: .38, ease }} />
+      <motion.span className="page-intro-dolphin-trace" initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }} animate={{ clipPath: 'inset(0 0% 0 0)', opacity: 1 }} transition={{ duration: 1.7, delay: .48, ease }} />
+      <motion.i className="page-intro-dolphin-scan" initial={{ x: '-80%', opacity: 0 }} animate={{ x: ['-80%', '10%', '135%'], opacity: [0, 1, 0] }} transition={{ duration: 1.35, delay: .58, ease }} />
+      <span className="page-intro-dolphin-point point-one" /><span className="page-intro-dolphin-point point-two" /><span className="page-intro-dolphin-point point-three" />
+    </motion.div>
+    <motion.div className="page-intro-brand" initial="hidden" animate="visible">
+      <motion.span className="page-intro-echo" variants={{ hidden: { opacity: 0, y: 18, clipPath: 'inset(0 0 100% 0)' }, visible: { opacity: [0, 1, 1, 1], y: [18, 0, 0, 0], clipPath: ['inset(0 0 100% 0)', 'inset(0 0 0 0)', 'inset(0 0 0 0)', 'inset(0 0 0 0)'] } }} transition={{ duration: 1.52, delay: 1.06, ease }}>Echo</motion.span>
+      <motion.span className="page-intro-vision" variants={{ hidden: { opacity: 0, x: -16, clipPath: 'inset(0 100% 0 0)' }, visible: { opacity: [0, 1, 1, 1], x: [-16, 0, 0, 0], clipPath: ['inset(0 100% 0 0)', 'inset(0 0 0 0)', 'inset(0 0 0 0)', 'inset(0 0 0 0)'] } }} transition={{ duration: 1.42, delay: 1.24, ease }}>Vision</motion.span><sup>®</sup>
+    </motion.div>
+    <motion.span className="page-intro-underline" initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: [0, 1, 1.18, 1], opacity: [0, 1, .9, .9] }} transition={{ duration: 1.25, delay: 1.48, ease }} />
+    <motion.p initial={{ opacity: 0, y: 10, letterSpacing: '.28em' }} animate={{ opacity: [0, 1, 1, 1], y: [10, 0, 0, 0], letterSpacing: ['.28em', '.12em', '.12em', '.12em'] }} transition={{ duration: 1.42, delay: 1.46, ease }}>DUBAI / UAE — CREATIVE BUSINESS PARTNER</motion.p>
+    <motion.em initial={{ x: '-120%', opacity: 0 }} animate={{ x: ['-120%', '-10%', '132%'], opacity: [0, 1, 0] }} transition={{ duration: 1.05, delay: 1.64, ease }} />
+    <motion.span className="page-intro-release" initial={{ opacity: 0, y: '75%', scaleX: .72 }} animate={{ opacity: [0, .5, 0], y: ['75%', '12%', '-32%'], scaleX: [.72, 1.12, 1.32] }} transition={{ duration: 1.72, delay: 3.58, ease }} />
   </motion.div>
 }
 function DolphinVisual({ variant = 'hero' }) {
@@ -127,6 +150,7 @@ function HeroSection() {
   return <section id="top" className="hero hero-tech" data-scene onPointerMove={handlePointerMove} onPointerLeave={resetPointer}>
     <motion.div className="hero-atmosphere" aria-hidden="true" style={reduce ? undefined : { x: backgroundX, y: backgroundY }}><span className="hero-noise" /><span className="hero-glow glow-one" /><span className="hero-glow glow-two" /><span className="hero-glow glow-three" />{heroParticles.map(([x, y, size], index) => <i key={index} className="hero-particle" style={{ '--x': `${x}%`, '--y': `${y}%`, '--size': `${size}px`, '--delay': `${index * -.52}s` }} />)}</motion.div>
     <div className="hero-grid" aria-hidden="true" />
+    <div className="hero-social-rail" aria-hidden="true"><i /><span>in</span><span>ig</span><span>f</span><span>▶</span><i /></div>
     <div className="hero-blue-slice" aria-hidden="true"><span className="slice-orbit orbit-a" /><span className="slice-orbit orbit-b" /><div className="slice-index"><b>01</b><i>02</i><i>03</i><i>04</i><i>05</i></div><p>Your vision<br /><em>Our echo</em></p></div>
     <div className="hero-copy">
       <motion.div className="hero-message" key={message.key} initial={reduce ? false : { opacity: 0, y: 16, filter: 'blur(5px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: activeService === -1 ? .72 : .42, ease }}>
@@ -137,6 +161,7 @@ function HeroSection() {
       <motion.div initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .64, delay: .56, ease }} className="hero-actions"><a className="button button-primary" href="#contact">Start a project <ArrowUpRight size={17} /></a><a className="button button-quiet" href="#work">Explore work <ArrowDownRight size={18} /></a></motion.div>
     </div>
     <DolphinVisual variant="hero" />
+    <div className="hero-vision-orb" aria-hidden="true"><span>Your vision · Our echo · </span><b /></div>
     <HeroOrbit activeService={activeService === -1 ? orbitFocus : activeService} onSelect={setActiveService} reduce={reduce} />
     {activeService !== -1 && !reduce && <motion.span key={message.key} className="hero-flash-word" aria-hidden="true" initial={{ opacity: 0, x: '-18%', clipPath: 'inset(0 100% 0 0)' }} animate={{ opacity: [0, .48, 0], x: ['-18%', '8%', '24%'], clipPath: ['inset(0 100% 0 0)', 'inset(0 0% 0 0)', 'inset(0 0% 0 100%)'] }} transition={{ duration: .9, ease }}>{heroServices[activeService].short}</motion.span>}
     <div className="hero-signal"><span>LIVE</span><i /><b>01. DUBAI</b></div><SectionMarker number="01" />
@@ -215,6 +240,7 @@ function EchoPlayground() {
     y.set(((event.clientY - rect.top) / rect.height - .5) * 22)
   }
   return <section className="echo-playground section-pad" data-scene onPointerMove={onMove} onPointerLeave={() => { x.set(0); y.set(0) }}>
+    <motion.div className="echo-vortex-backdrop" aria-hidden="true" style={reduce ? undefined : { x: moveX, y: moveY }}><img src={echoVortexBackground} alt="" /></motion.div>
     <Reveal className="echo-playground-copy"><p className="eyebrow">06 / PLAY WITH OUR ECHO</p><h2>Make your next<br />move <em>felt.</em></h2><p>Move across the field and follow the signal. Great creative work has energy—before anyone can explain why it works.</p><span>Move cursor <ArrowUpRight size={17} /></span></Reveal>
     <motion.div className="echo-dolphin" aria-hidden="true" style={reduce ? undefined : { x: moveX, y: moveY }} animate={reduce ? undefined : { rotate: [0, 1.2, -.6, 0], scale: [1, 1.018, .995, 1] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}><img src={playgroundDolphin} alt="" /><i /><i /><i /></motion.div>
   </section>
@@ -224,6 +250,7 @@ function WorkPortfolio() {
   const visibleProjects = activeFilter === 'All work' ? workProjects : workProjects.filter(project => project.filters.includes(activeFilter))
 
   return <div className="work-portfolio">
+    <div className="work-showcase-intro"><p className="eyebrow">OUR WORK</p><h2>Ideas we’ve<br />brought to <em>life.</em></h2><a className="inline-link" href="#contact">View all projects <ArrowUpRight size={16} /></a></div>
     <div className="work-filters" role="tablist" aria-label="Filter selected work">
       {workFilters.map(filter => <button key={filter} type="button" role="tab" aria-selected={activeFilter === filter} className={activeFilter === filter ? 'is-active' : ''} onClick={() => setActiveFilter(filter)}><i />{filter}</button>)}
     </div>
@@ -300,37 +327,33 @@ function App() {
 
       <main id="content">
         <HeroSection />
-
         <Manifesto />
-
         <section id="services" className="services section-pad" data-scene>
           <div className="services-orb"><OrbitalMark /></div>
           <div className="section-heading services-heading"><Reveal><p className="eyebrow">WHAT WE CREATE</p><h2>Full-service<br /><em>digital solutions.</em></h2></Reveal><Reveal delay={0.1}><p>Every discipline connects to the next, so your brand has one voice wherever people find it.</p></Reveal></div>
           <ServiceCards /><SectionMarker number="01" />
         </section>
-
         <section id="work" className="work section-pad" data-scene>
-          <div className="section-heading work-heading"><Reveal><p className="eyebrow">03 / SELECTED WORK</p><h2>Recent <em>work.</em></h2></Reveal><Reveal delay={0.1}><p>Brand systems, campaigns and digital experiences built with a clear business purpose.</p></Reveal></div>
           <WorkPortfolio />
           <div className="clients-band"><p>Trusted creative partner across the UAE</p><div><span>AL QASEEM</span><span>LEBANESE PALACE</span><span>EMIRATES MINTING</span><span>DIRECT LINE</span><span>ROZ</span></div></div>
           <div className="impact-stats" aria-label="EchoVision at a glance">{[['08+', 'Years of experience'], ['80+', 'Happy clients'], ['120+', 'Successful projects'], ['15+', 'Industries served']].map(([number, label]) => <Reveal key={label}><article><strong>{number}</strong><span>{label}</span></article></Reveal>)}</div><SectionMarker number="03" />
         </section>
-
+        <SectionTransition />
         <EchoPlayground />
-
+        <SectionTransition />
         <section className="experience section-pad" data-scene>
           <figure className="experience-workstation" aria-hidden="true"><img src={digitalWorkstation} alt="" /><figcaption>Web &amp; app development / 06</figcaption></figure>
           <Reveal className="experience-copy"><p className="eyebrow">WEB & APPS / 05</p><h2>The website becomes<br />the <em>product.</em></h2><p>We design digital experiences that communicate, guide and convert—turning your brand into something people can explore, understand and remember.</p><a className="inline-link" href="#contact">Discuss a digital experience <ArrowUpRight size={18} /></a></Reveal>
           <div className="experience-values">{[['01', 'Immersive', 'A clear, considered experience at every touchpoint.'], ['02', 'Purposeful', 'Every interaction has a role in the customer journey.'], ['03', 'Built to perform', 'Designed for clarity, speed and conversion.']].map(([number, title, body], index) => <Reveal key={title} delay={.1 + index * .08}><article><span>{number}</span><h3>{title}</h3><p>{body}</p></article></Reveal>)}</div>
         </section>
-
+        <SectionTransition />
         <section className="production section-pad" data-scene>
           <Reveal className="production-intro"><p className="eyebrow">MEDIA PRODUCTION / 05</p><h2>Turn real moments into<br /><em>visual assets.</em></h2><p>Photography, video and digital storefronts shaped for the places people discover, explore and remember your brand.</p></Reveal>
           <Reveal className="production-panel" delay={.12}><div className="production-panel-head"><span>Production</span><a href="#contact">Plan a production <ArrowUpRight size={17} /></a></div>{productionServices.map(([number, title, body]) => <article key={title}><span>{number}</span><div><h3>{title}</h3><p>{body}</p></div><ArrowUpRight size={18} /></article>)}</Reveal>
         </section>
-
+        <SectionTransition />
         <section className="process section-pad" data-scene><Reveal><p className="eyebrow">07 / HOW WE WORK</p><h2>Clear thinking.<br /><em>Visible momentum.</em></h2></Reveal><div className="process-steps"><MomentumRail />{processSteps.map(([number, title, body], index) => <Reveal className="process-step" key={title} delay={index * 0.1}><article><span>{number}</span><h3>{title}</h3><p>{body}</p><ChevronRight size={18} /></article></Reveal>)}</div></section>
-
+        <SectionTransition />
         <section id="contact" className="contact section-pad" data-scene><div className="contact-background" aria-hidden="true"><img src={portalReference} alt="" /><span /></div><Reveal className="contact-copy"><p className="eyebrow">07 / START A CONVERSATION</p><h2>Make your next move <em>felt.</em></h2><p>Tell us where you want to go. We’ll bring the ideas, people and digital tools to help get you there.</p><div className="contact-direct"><a href="tel:+971521617218"><Phone size={17} /> +971 52 161 7218</a><a href="mailto:info@echovision.ae"><Send size={16} /> info@echovision.ae</a></div></Reveal>
           <Reveal className="form-wrap" delay={0.1}><form className="lead-form" onSubmit={handleSubmit}>
             <div className="form-question"><span>01</span><fieldset><legend>What can we help with?</legend>{['I need more customers', 'I need a clearer brand', 'I need content that performs', 'I need a website or app'].map(label => <label className="choice" key={label}><input type="radio" name="problem" checked={form.problem === label} onChange={() => setForm({ ...form, problem: label })} /><span>{label}</span></label>)}</fieldset></div>
