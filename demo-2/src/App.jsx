@@ -66,21 +66,27 @@ const productionServices = [
   ['03', 'Digital storefronts', 'Websites and digital touchpoints that carry the story further.'],
 ]
 
-function Reveal({ children, className = '', delay = 0 }) {
+function Reveal({ children, className = '', delay = 0, variant = 'rise', duration = .88 }) {
   const reduce = useReducedMotion()
-  return <motion.div className={`reveal ${className}`} initial={reduce ? false : { opacity: 0, y: 42, scale: .985, rotateX: -5, filter: 'blur(10px)' }} whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0, filter: 'blur(0px)' }} viewport={{ once: true, amount: 0.16, margin: '0px 0px -70px 0px' }} transition={{ duration: .88, delay, ease }}>{children}</motion.div>
+  const entrances = {
+    rise: { y: 42, scale: .985, rotateX: -5 },
+    left: { x: -58, y: 16, scale: .97, rotate: -2.5 },
+    right: { x: 58, y: 16, scale: .97, rotate: 2.5 },
+    scatterLeft: { x: -48, y: 34, scale: .93, rotate: -4 },
+    scatterRight: { x: 48, y: -26, scale: .93, rotate: 4 },
+    lift: { y: 66, scale: .92, rotateX: -12 },
+    reveal: { y: 24, scaleY: .2, transformOrigin: 'bottom' },
+  }
+  const entrance = entrances[variant] ?? entrances.rise
+  return <motion.div className={`reveal ${className}`} initial={reduce ? false : { opacity: 0, filter: 'blur(10px)', ...entrance }} whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, scaleY: 1, rotate: 0, rotateX: 0, filter: 'blur(0px)' }} viewport={{ once: true, amount: 0.16, margin: '0px 0px -70px 0px' }} transition={{ duration, delay, ease }}>{children}</motion.div>
+}
+
+function KineticAccent({ children, className = '' }) {
+  return <em className={`kinetic-accent ${className}`}>{children}<i aria-hidden="true" /></em>
 }
 
 function SectionMarker({ number }) { return <div className="section-marker" aria-hidden="true"><span>{number}</span><i /><i /><i /></div> }
 function OrbitalMark() { return <div className="orbital-mark" aria-hidden="true"><span /><span /><span /><b /></div> }
-function SectionTransition({ hero = false }) {
-  const reduce = useReducedMotion()
-  return <motion.div className={`section-transition ${hero ? 'section-transition-hero' : ''}`} aria-hidden="true" initial={reduce ? false : { opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, amount: .65 }} transition={{ duration: .32 }}>
-    <motion.span className="section-transition-wave" initial={reduce ? false : { x: '-72%', scaleX: .38, opacity: 0 }} whileInView={{ x: ['-72%', '-18%', '58%'], scaleX: [.38, 1, 1.26], opacity: [0, .94, 0] }} viewport={{ once: true, amount: .65 }} transition={{ duration: hero ? 2.05 : 1.65, ease }} />
-    <motion.span className="section-transition-orb" initial={reduce ? false : { scale: .2, opacity: 0 }} whileInView={{ scale: [.2, 1.15, 1.85], opacity: [0, .85, 0] }} viewport={{ once: true, amount: .65 }} transition={{ duration: hero ? 1.6 : 1.28, delay: .2, ease }}><i /><i /><b /></motion.span>
-    <motion.i className="section-transition-line" initial={reduce ? false : { scaleX: 0, opacity: 0 }} whileInView={{ scaleX: [0, 1, 1], opacity: [0, .92, 0] }} viewport={{ once: true, amount: .65 }} transition={{ duration: 1.32, delay: .12, ease }} />
-  </motion.div>
-}
 function PageIntro() {
   const reduce = useReducedMotion()
   if (reduce) return null
@@ -206,7 +212,7 @@ function ServiceCards() {
   return <div className="services-cards" ref={sectionRef} onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)} onFocusCapture={() => setIsPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setIsPaused(false) }}>
     {serviceCards.map(({ number, title, body, icon: Icon, values }, index) => {
       const isFlipped = flippedCard === index
-      return <motion.article key={title} className={`service-card service-card-${index + 1} ${isFlipped ? 'is-flipped' : ''}`} role="button" tabIndex={0} aria-label={`${title}. ${isFlipped ? 'Hide details' : 'Show details'}`} aria-pressed={isFlipped} onClick={event => { if (!event.target.closest('a')) toggleCard(index) }} onKeyDown={event => onCardKeyDown(event, index)} initial={reduce ? false : { opacity: 0, y: 32, scale: .97 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, amount: .18 }} transition={{ duration: .7, delay: index * .11, ease }}>
+      return <motion.article key={title} className={`service-card service-card-${index + 1} ${isFlipped ? 'is-flipped' : ''}`} role="button" tabIndex={0} aria-label={`${title}. ${isFlipped ? 'Hide details' : 'Show details'}`} aria-pressed={isFlipped} onClick={event => { if (!event.target.closest('a')) toggleCard(index) }} onKeyDown={event => onCardKeyDown(event, index)} initial={reduce ? false : { opacity: 0, x: index % 2 ? 42 : -42, y: index % 3 === 1 ? 36 : 20, scale: .93, rotate: index % 2 ? 2.6 : -2.6, filter: 'blur(8px)' }} whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0, filter: 'blur(0px)' }} viewport={{ once: true, amount: .18 }} transition={{ duration: .78, delay: index * .1, ease }}>
         <div className="service-card-inner">
           <div className="service-card-face service-card-front">
             <div className="service-card-top"><span>{number}</span><div className="service-card-glyph" aria-hidden="true"><i /><i /><Icon size={24} strokeWidth={1.35} /></div></div>
@@ -222,27 +228,31 @@ function ServiceCards() {
 }
 function Manifesto() {
   return <section id="about" className="manifesto section-pad" data-scene>
-    <Reveal className="manifesto-label"><p className="eyebrow">01 / OUR MANIFESTO</p><span>ECHOVISION / DIGITAL MARKETING</span></Reveal>
-    <Reveal className="manifesto-copy" delay={.08}><h2>We don’t follow<br />the <em>digital.</em><br />We shape it.</h2><p>EchoVision is a Dubai-based creative business partner. We connect strategy, design, media and digital experiences so brands can move with clarity and make an impact that lasts.</p><a className="inline-link" href="#services">Who we are <ArrowDownRight size={18} /></a></Reveal>
-    <div className="manifesto-stats" aria-label="EchoVision at a glance">{[['08+', 'Years of experience'], ['80+', 'Happy clients'], ['120+', 'Successful projects'], ['15+', 'Industries served']].map(([number, label]) => <article key={label}><strong>{number}</strong><span>{label}</span></article>)}</div><div className="manifesto-wave" aria-hidden="true"><i /><i /><i /><b /></div><SectionMarker number="01" />
+    <Reveal className="manifesto-label" variant="left"><p className="eyebrow">01 / OUR MANIFESTO</p><span>ECHOVISION / DIGITAL MARKETING</span></Reveal>
+    <Reveal className="manifesto-copy" variant="lift" delay={.08}><h2>We don’t follow<br />the <em>digital.</em><br />We shape it.</h2><p>EchoVision is a Dubai-based creative business partner. We connect strategy, design, media and digital experiences so brands can move with clarity and make an impact that lasts.</p><a className="inline-link" href="#services">Who we are <ArrowDownRight size={18} /></a></Reveal>
+    <Reveal className="manifesto-stats-reveal" variant="right" delay={.16}><div className="manifesto-stats" aria-label="EchoVision at a glance">{[['08+', 'Years of experience'], ['80+', 'Happy clients'], ['120+', 'Successful projects'], ['15+', 'Industries served']].map(([number, label]) => <article key={label}><strong>{number}</strong><span>{label}</span></article>)}</div></Reveal><div className="manifesto-wave" aria-hidden="true"><i /><i /><i /><b /></div><SectionMarker number="01" />
   </section>
 }
 function EchoPlayground() {
   const reduce = useReducedMotion()
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const moveX = useSpring(x, { stiffness: 55, damping: 19, mass: .42 })
-  const moveY = useSpring(y, { stiffness: 55, damping: 19, mass: .42 })
-  const onMove = event => {
-    if (reduce || event.pointerType === 'touch') return
-    const rect = event.currentTarget.getBoundingClientRect()
-    x.set(((event.clientX - rect.left) / rect.width - .5) * 28)
-    y.set(((event.clientY - rect.top) / rect.height - .5) * 22)
-  }
-  return <section className="echo-playground section-pad" data-scene onPointerMove={onMove} onPointerLeave={() => { x.set(0); y.set(0) }}>
-    <motion.div className="echo-vortex-backdrop" aria-hidden="true" style={reduce ? undefined : { x: moveX, y: moveY }}><img src={echoVortexBackground} alt="" /></motion.div>
-    <Reveal className="echo-playground-copy"><p className="eyebrow">06 / PLAY WITH OUR ECHO</p><h2>Make your next<br />move <em>felt.</em></h2><p>Move across the field and follow the signal. Great creative work has energy—before anyone can explain why it works.</p><span>Move cursor <ArrowUpRight size={17} /></span></Reveal>
-    <motion.div className="echo-dolphin" aria-hidden="true" style={reduce ? undefined : { x: moveX, y: moveY }} animate={reduce ? undefined : { rotate: [0, 1.2, -.6, 0], scale: [1, 1.018, .995, 1] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}><img src={playgroundDolphin} alt="" /><i /><i /><i /></motion.div>
+  const proofStats = [['08+', 'Years of experience'], ['80+', 'Happy clients'], ['120+', 'Successful projects'], ['15+', 'Industries served']]
+  const testimonials = [
+    ['Al Qaseem Group', 'A connected digital direction that made every customer touchpoint feel considered.', 'Brand & digital experience'],
+    ['Lebanese Palace', 'Strategic, creative and visually clear. The work gave our brand a stronger presence.', 'Brand identity & media'],
+    ['Direct Line', 'Their connection to the real need gave us a more valuable and focused result.', 'Digital growth partner'],
+  ]
+  return <section className="echo-playground echo-proof" data-scene>
+    <motion.div className="echo-proof-atmosphere" aria-hidden="true" animate={reduce ? undefined : { backgroundPosition: ['0% 48%', '100% 52%', '0% 48%'] }} transition={{ duration: 24, ease: 'linear', repeat: Infinity }} />
+    <div className="echo-proof-stats" aria-label="EchoVision at a glance">{proofStats.map(([number, label]) => <article key={label}><strong>{number}</strong><span>{label}</span></article>)}</div>
+    <div className="echo-proof-main">
+      <Reveal className="echo-proof-intro"><p className="eyebrow">TRUSTED BY VISIONARIES</p><h2>Great brands<br />trust our <em>echo.</em></h2><span>Clients love<br />the <em>results.</em></span></Reveal>
+      <div className="echo-testimonials" aria-label="Client testimonials">{testimonials.map(([name, quote, role], index) => <motion.article key={name} className={index === 1 ? 'is-featured' : ''} initial={reduce ? false : { opacity: 0, y: 18, scale: .985 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, amount: .4 }} transition={{ duration: .7, delay: .12 + index * .1, ease }}><b aria-hidden="true">“</b><p>{quote}</p><footer><i>{name.slice(0, 1)}</i><span><strong>{name}</strong><small>{role}</small></span></footer></motion.article>)}</div>
+    </div>
+    <div className="echo-proof-cta">
+      <div><h2>Have a vision?<br />Let’s make it <em>echo.</em></h2><a className="button button-primary" href="#contact">Start a project <ArrowUpRight size={16} /></a></div>
+      <div className="echo-proof-contact"><a href="tel:+971521617218"><Phone size={14} /> +971 52 161 7218</a><a href="tel:+971508865042"><Phone size={14} /> +971 50 886 5042</a><a href="mailto:info@echovision.ae"><Send size={14} /> info@echovision.ae</a><span><Globe2 size={14} /> Dubai — UAE</span></div>
+      <p>Let’s<br /><em>create</em><br />impact.</p>
+    </div>
   </section>
 }
 function WorkPortfolio() {
@@ -255,7 +265,7 @@ function WorkPortfolio() {
       {workFilters.map(filter => <button key={filter} type="button" role="tab" aria-selected={activeFilter === filter} className={activeFilter === filter ? 'is-active' : ''} onClick={() => setActiveFilter(filter)}><i />{filter}</button>)}
     </div>
     <div className={`project-grid work-filter-results projects-${visibleProjects.length} ${activeFilter === 'All work' ? 'is-showcase' : ''}`} aria-live="polite">
-      {visibleProjects.map((project, index) => <motion.article key={project.id} data-project={project.number} className={`project-card ${project.className}`} initial={activeFilter === 'All work' ? { opacity: 0 } : { opacity: 0, y: 18, scale: .985 }} animate={activeFilter === 'All work' ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }} transition={{ duration: .48, delay: index * .07, ease }}>
+      {visibleProjects.map((project, index) => <motion.article key={project.id} data-project={project.number} className={`project-card ${project.className}`} initial={{ opacity: 0, x: index % 2 ? 46 : -46, y: index % 3 === 0 ? 24 : -16, scale: .94, rotate: index % 2 ? 2.2 : -2.2, filter: 'blur(8px)' }} whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0, filter: 'blur(0px)' }} viewport={{ once: true, amount: .18 }} transition={{ duration: .72, delay: index * .1, ease }}>
         <div className="work-project-frame">
           {project.image1200 ? <picture><source media="(max-width: 720px)" srcSet={project.image720} /><img src={project.image1200} alt={project.alt} loading="lazy" /></picture> : <><div className="project-pattern" /><Suspense fallback={null}><OrbitLottie className="project-orbit" /></Suspense></>}
           <div className="project-wash" /><div className="project-card-copy"><p>{project.number} / {project.eyebrow}</p><h3>{project.title[0]}<br />{project.title[1]}</h3><span>{project.detail}</span><a href={project.id === 'ai' ? '#services' : '#contact'} aria-label={project.id === 'ai' ? 'Explore AI MSG' : `Discuss a ${project.title.join(' ')} project`}>{project.id === 'ai' ? <Bot size={21} /> : <ArrowUpRight size={21} />}</a></div>
@@ -330,7 +340,7 @@ function App() {
         <Manifesto />
         <section id="services" className="services section-pad" data-scene>
           <div className="services-orb"><OrbitalMark /></div>
-          <div className="section-heading services-heading"><Reveal><p className="eyebrow">WHAT WE CREATE</p><h2>Full-service<br /><em>digital solutions.</em></h2></Reveal><Reveal delay={0.1}><p>Every discipline connects to the next, so your brand has one voice wherever people find it.</p></Reveal></div>
+          <div className="section-heading services-heading"><Reveal variant="left"><p className="eyebrow">WHAT WE CREATE</p><h2>Full-service<br /><em>digital solutions.</em></h2></Reveal><Reveal variant="right" delay={0.12}><p>Every discipline connects to the next, so your brand has one voice wherever people find it.</p></Reveal></div>
           <ServiceCards /><SectionMarker number="01" />
         </section>
         <section id="work" className="work section-pad" data-scene>
@@ -338,24 +348,19 @@ function App() {
           <div className="clients-band"><p>Trusted creative partner across the UAE</p><div><span>AL QASEEM</span><span>LEBANESE PALACE</span><span>EMIRATES MINTING</span><span>DIRECT LINE</span><span>ROZ</span></div></div>
           <div className="impact-stats" aria-label="EchoVision at a glance">{[['08+', 'Years of experience'], ['80+', 'Happy clients'], ['120+', 'Successful projects'], ['15+', 'Industries served']].map(([number, label]) => <Reveal key={label}><article><strong>{number}</strong><span>{label}</span></article></Reveal>)}</div><SectionMarker number="03" />
         </section>
-        <SectionTransition />
         <EchoPlayground />
-        <SectionTransition />
         <section className="experience section-pad" data-scene>
           <figure className="experience-workstation" aria-hidden="true"><img src={digitalWorkstation} alt="" /><figcaption>Web &amp; app development / 06</figcaption></figure>
-          <Reveal className="experience-copy"><p className="eyebrow">WEB & APPS / 05</p><h2>The website becomes<br />the <em>product.</em></h2><p>We design digital experiences that communicate, guide and convert—turning your brand into something people can explore, understand and remember.</p><a className="inline-link" href="#contact">Discuss a digital experience <ArrowUpRight size={18} /></a></Reveal>
-          <div className="experience-values">{[['01', 'Immersive', 'A clear, considered experience at every touchpoint.'], ['02', 'Purposeful', 'Every interaction has a role in the customer journey.'], ['03', 'Built to perform', 'Designed for clarity, speed and conversion.']].map(([number, title, body], index) => <Reveal key={title} delay={.1 + index * .08}><article><span>{number}</span><h3>{title}</h3><p>{body}</p></article></Reveal>)}</div>
+          <Reveal className="experience-copy" variant="right"><p className="eyebrow">WEB & APPS / 05</p><h2>The website becomes<br />the <em>product.</em></h2><p>We design digital experiences that communicate, guide and convert—turning your brand into something people can explore, understand and remember.</p><a className="inline-link" href="#contact">Discuss a digital experience <ArrowUpRight size={18} /></a></Reveal>
+          <div className="experience-values">{[['01', 'Immersive', 'A clear, considered experience at every touchpoint.'], ['02', 'Purposeful', 'Every interaction has a role in the customer journey.'], ['03', 'Built to perform', 'Designed for clarity, speed and conversion.']].map(([number, title, body], index) => <Reveal key={title} variant={index % 2 ? 'scatterRight' : 'scatterLeft'} delay={.1 + index * .1}><article><span>{number}</span><h3>{title}</h3><p>{body}</p></article></Reveal>)}</div>
         </section>
-        <SectionTransition />
         <section className="production section-pad" data-scene>
-          <Reveal className="production-intro"><p className="eyebrow">MEDIA PRODUCTION / 05</p><h2>Turn real moments into<br /><em>visual assets.</em></h2><p>Photography, video and digital storefronts shaped for the places people discover, explore and remember your brand.</p></Reveal>
-          <Reveal className="production-panel" delay={.12}><div className="production-panel-head"><span>Production</span><a href="#contact">Plan a production <ArrowUpRight size={17} /></a></div>{productionServices.map(([number, title, body]) => <article key={title}><span>{number}</span><div><h3>{title}</h3><p>{body}</p></div><ArrowUpRight size={18} /></article>)}</Reveal>
+          <Reveal className="production-intro" variant="left"><p className="eyebrow">MEDIA PRODUCTION / 05</p><h2>Turn real moments into<br /><KineticAccent className="production-accent">visual assets.</KineticAccent></h2><p>Photography, video and digital storefronts shaped for the places people discover, explore and remember your brand.</p></Reveal>
+          <Reveal className="production-panel" variant="right" delay={.12}><div className="production-panel-head"><span>Production</span><a href="#contact">Plan a production <ArrowUpRight size={17} /></a></div>{productionServices.map(([number, title, body]) => <article key={title}><span>{number}</span><div><h3>{title}</h3><p>{body}</p></div><ArrowUpRight size={18} /></article>)}</Reveal>
         </section>
-        <SectionTransition />
-        <section className="process section-pad" data-scene><Reveal><p className="eyebrow">07 / HOW WE WORK</p><h2>Clear thinking.<br /><em>Visible momentum.</em></h2></Reveal><div className="process-steps"><MomentumRail />{processSteps.map(([number, title, body], index) => <Reveal className="process-step" key={title} delay={index * 0.1}><article><span>{number}</span><h3>{title}</h3><p>{body}</p><ChevronRight size={18} /></article></Reveal>)}</div></section>
-        <SectionTransition />
-        <section id="contact" className="contact section-pad" data-scene><div className="contact-background" aria-hidden="true"><img src={portalReference} alt="" /><span /></div><Reveal className="contact-copy"><p className="eyebrow">07 / START A CONVERSATION</p><h2>Make your next move <em>felt.</em></h2><p>Tell us where you want to go. We’ll bring the ideas, people and digital tools to help get you there.</p><div className="contact-direct"><a href="tel:+971521617218"><Phone size={17} /> +971 52 161 7218</a><a href="mailto:info@echovision.ae"><Send size={16} /> info@echovision.ae</a></div></Reveal>
-          <Reveal className="form-wrap" delay={0.1}><form className="lead-form" onSubmit={handleSubmit}>
+        <section className="process section-pad" data-scene><Reveal variant="lift"><p className="eyebrow">07 / HOW WE WORK</p><h2>Clear thinking.<br /><em>Visible momentum.</em></h2></Reveal><div className="process-steps"><MomentumRail />{processSteps.map(([number, title, body], index) => <Reveal className="process-step" variant={index % 2 ? 'scatterRight' : 'scatterLeft'} key={title} delay={index * 0.1}><article><span>{number}</span><h3>{title}</h3><p>{body}</p><ChevronRight size={18} /></article></Reveal>)}</div></section>
+        <section id="contact" className="contact section-pad" data-scene><div className="contact-background" aria-hidden="true"><img src={portalReference} alt="" /><span /><i className="contact-blue-current" /><i className="contact-blue-current contact-blue-current-alt" /></div><Reveal className="contact-copy" variant="left"><p className="eyebrow">07 / START A CONVERSATION</p><h2>Make your next move <KineticAccent className="contact-accent">felt.</KineticAccent></h2><p>Tell us where you want to go. We’ll bring the ideas, people and digital tools to help get you there.</p><div className="contact-direct"><a href="tel:+971521617218"><Phone size={17} /> +971 52 161 7218</a><a href="mailto:info@echovision.ae"><Send size={16} /> info@echovision.ae</a></div></Reveal>
+          <Reveal className="form-wrap" variant="right" delay={0.12}><form className="lead-form" onSubmit={handleSubmit}>
             <div className="form-question"><span>01</span><fieldset><legend>What can we help with?</legend>{['I need more customers', 'I need a clearer brand', 'I need content that performs', 'I need a website or app'].map(label => <label className="choice" key={label}><input type="radio" name="problem" checked={form.problem === label} onChange={() => setForm({ ...form, problem: label })} /><span>{label}</span></label>)}</fieldset></div>
             <div className="form-question"><span>02</span><fieldset><legend>Tell us a little more</legend><label className="sr-only" htmlFor="industry">Industry</label><select id="industry" value={form.industry} required onChange={event => setForm({ ...form, industry: event.target.value })}><option value="">Your industry</option><option>Real estate</option><option>Hospitality</option><option>Luxury retail</option><option>Healthcare & wellness</option><option>Other</option></select><div className="budget-row">{['Under $5K', '$5K – $10K', '$10K+'].map(label => <label key={label}><input type="radio" name="budget" checked={form.budget === label} onChange={() => setForm({ ...form, budget: label })} /><span>{label}</span></label>)}</div></fieldset></div>
             <div className="form-question form-details"><span>03</span><fieldset><legend>How should we reach you?</legend><label>Name<input required value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} autoComplete="name" /></label><label>Company<input value={form.company} onChange={event => setForm({ ...form, company: event.target.value })} autoComplete="organization" /></label><label>Email<input required type="email" value={form.email} onChange={event => setForm({ ...form, email: event.target.value })} autoComplete="email" /></label><label>Phone / WhatsApp<input type="tel" value={form.phone} onChange={event => setForm({ ...form, phone: event.target.value })} autoComplete="tel" /></label><button className="button button-primary form-submit" type="submit" disabled={isSending} aria-busy={isSending}>{sent ? <><Check size={17} /> Request received</> : isSending ? 'Sending…' : <>Book a free consultation <ArrowUpRight size={17} /></>}</button><p className="form-success" role="status" aria-live="polite">{sent ? 'Thank you. The EchoVision team will be ready to continue the conversation.' : ''}</p></fieldset></div>
